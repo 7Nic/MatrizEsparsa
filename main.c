@@ -6,6 +6,7 @@
 ------TO DO LIST------
 - Criar uma struct que informa a qtd_linhas e qtd_colunas da matriz e tirá-la da struct
 - Após isso modificar as funções passando essa nova struct como parâmetro
+- Colocar as funções para receber somente números e impedir o usuario de colocar letras ou numeros inválidos
 **/
 
 
