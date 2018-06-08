@@ -4,6 +4,8 @@
 
 /**
 ------TO DO LIST------
+- Criar uma struct que informa a qtd_linhas e qtd_colunas da matriz e tirá-la da struct
+- Após isso modificar as funções passando essa nova struct como parâmetro
 **/
 
 
@@ -37,7 +39,7 @@ struct matriz{
 typedef struct matriz MATRIZ;
 typedef MATRIZ *MATRIZ_PTR;
 
-//-------------FUN��ES-----------------------//
+//-------------FUNÇÕES-----------------------//
 
 char Input(int min, int max){
     char c;
@@ -283,10 +285,10 @@ void MenuSobre() {
 	printf("                    Gerenciador de notas\n");
 	printf("                       Sobre o projeto       \n\n\n\n\n\n");
 	printf("        Programa para gerenciamento de matrizes esparsas\n\n");
-	printf("             As posic�es vazias sao tomadas como contendo o valor 0\n\n");
+	printf("             As posicões vazias sao tomadas como contendo o valor 0\n\n");
 	printf(" Projeto da disciplina de Introducao a Ciencia da Computacao I\n\n");
 	printf("                 Universidade de Sao Paulo\n\n\n");
-	printf("\n\n   Pressione ENTER para seguir para as informac�es dos autores\n\n");
+	printf("\n\n   Pressione ENTER para seguir para as informacões dos autores\n\n");
 	char c = getchar();
 	while (c != '\n') c = getchar();
 
