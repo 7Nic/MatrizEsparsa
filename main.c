@@ -1,16 +1,76 @@
 #include <stdio.h>
-#include <locale.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 /**
 ------TO DO LIST------
-- Criar uma struct que informa a qtd_linhas e qtd_colunas da matriz e tirá-la da struct
-- Após isso modificar as funções passando essa nova struct como parâmetro
-- Colocar as funções para receber somente números e impedir o usuario de colocar letras ou numeros inválidos
+- Determinante
 **/
 
 
-//i: linha, j: coluna
+
+struct matriz{
+	double data;
+	int i;
+	int j;
+	struct matriz *prox;
+};
+
+struct info_matriz{
+    int qtd_linhas;
+	int qtd_colunas;
+};
+
+typedef struct info_matriz INFO_MATRIZ;
+typedef INFO_MATRIZ *INFO_MATRIZ_PTR;
+
+typedef struct matriz MATRIZ;
+typedef MATRIZ *MATRIZ_PTR;
+
+//-------------FUNÇÕES-----------------------//
+
+int ReadInt(int *numero) {
+	bool negativo = false;
+
+	//Limpa o buffer inicial até encontrar um numero ou ate o buffer acabar
+	char c = getchar();
+
+	if (c == '\n' || c == '\0')
+        c = getchar();
+
+	while (c != '\n' && c != '\0' && (c < '0' || c > '9')) {
+		//Se o usuario digitou o sinal de menos, salva para no final multiplar por -1
+		if (c == '-')
+			negativo = true;
+
+		c = getchar();
+	}
+
+	//Se o buffer de entrada acabou, entao nao tem nenhum numero para ler
+	if (c == '\n' || c == '\0')
+		return 0;
+
+	//Caso o usuario digitou algum digito, le os digitos ate acabar
+	*numero = c - '0';
+	c = getchar();
+	while (c != '\n' && c != '\0' && c >= '0' && c <= '9') {
+		*numero = (*numero) * 10 + c - '0';
+		c = getchar();
+	}
+
+	//Certifica que o buffer continua limpo depois da leitura
+	while (c != '\n' && c != '\0') {
+		c = getchar();
+	}
+
+	//Se o usuario digitou um '-' antes de digitar o numero, deixa o numero negativo
+	if (negativo)
+		*numero *= -1;
+
+	//retorna sucesso
+	return 1;
+}
+
 
 void splash_screen(){
     printf("        .___  ___.      ___   .___________..______       __   ________ \n");
@@ -28,19 +88,6 @@ void splash_screen(){
     printf("|_______|_______/    | _|    /__/     \\__\\ | _| `._____|_______/    /__/     \\__\\ \n");
 }
 
-struct matriz{
-	double data;
-	int qtd_linhas;
-	int qtd_colunas;
-	int i;
-	int j;
-	struct matriz *prox;
-};
-
-typedef struct matriz MATRIZ;
-typedef MATRIZ *MATRIZ_PTR;
-
-//-------------FUNÇÕES-----------------------//
 
 char Input(int min, int max){
     char c;
@@ -53,7 +100,7 @@ char Input(int min, int max){
 }
 
 void WaitENTER() {
-	printf("\n\n        Pressione ENTER para voltar ao menu principal\n\n");
+	printf("\n\n            Pressione ENTER para voltar ao menu principal\n\n");
 	char c = getchar();
 	while (c != '\n') c = getchar();
 }
@@ -73,14 +120,19 @@ int menu_principal(){
 	printf("5 - Atribuir valor a uma posicao              6 - Sobre\n");
 	printf("7 - Sair\n\n\n\n\n\n");
 	printf("Digite a opcao desejada: ");
-	char acao;
-	acao = Input('1', '7') - '0';
-	fflush(stdin);
+	int acao;
+
+        int valid = ReadInt(&acao);
+            while (!valid || acao<1 || acao>7){
+                printf("Entrada invalida, tente novamente: ");
+                valid = ReadInt(&acao);
+            }
+
 	return acao;
 }
 
 
-void atribuir_valor_pos(MATRIZ_PTR matriz){
+void atribuir_valor_pos(MATRIZ_PTR matriz, INFO_MATRIZ info_matriz){
     if (matriz == NULL){
         printf("Essa matriz esta vazia.\n");
         WaitENTER();
@@ -90,18 +142,27 @@ void atribuir_valor_pos(MATRIZ_PTR matriz){
         int i, j;
         double data;
         printf("Digite a linha da posicao: ");
-        scanf("%d", &i);
-        fflush(stdin);
-        //printf("qtd_linhas  = %d e qtd_colunas = %d\n", matriz->qtd_linhas, matriz->qtd_colunas);
-        if (i > matriz->qtd_linhas || i<0){
+
+        int valid = ReadInt(&i);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&i);
+        }
+
+        if (i > info_matriz.qtd_linhas || i<0){
             printf("Essa linha nao existe.\n");
             WaitENTER();
             return;
         }
         printf("Digite a coluna da posicao: ");
-        scanf("%d", &j);
-        fflush(stdin);
-        if (j > matriz->qtd_colunas || j<0){
+
+        valid = ReadInt(&j);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&j);
+        }
+
+        if (j > info_matriz.qtd_colunas || j<0){
             printf("Essa coluna nao existe.\n");
             WaitENTER();
             return;
@@ -135,29 +196,35 @@ void atribuir_valor_pos(MATRIZ_PTR matriz){
         nova_pos->data = data;
         nova_pos->i = i;
         nova_pos->j = j;
-        nova_pos->qtd_colunas = matriz->qtd_colunas;
-        nova_pos->qtd_linhas = matriz->qtd_linhas;
         printf("Deseja adicionar mais valores?  1 - SIM     0 - NAO.\n");
-        char input;
-        //scanf("%d", &input);
-        input = Input('0', '1') - '0';
-        fflush(stdin);
+        int acao;
+        valid = ReadInt(&acao);
+            while (!valid || acao<0 || acao>1){
+                printf("Entrada invalida, tente novamente: ");
+                valid = ReadInt(&acao);
+            }
+
         Limpa_tela();
-        if (input == 0) return;
+        if (acao == 0) return;
     }
 
 }
 
+
 //cria uma struct de matriz e coloca na Lista de matrizes
-MATRIZ_PTR criar_matriz(){
+MATRIZ_PTR criar_matriz(INFO_MATRIZ_PTR info_matriz_ptr){
 	Limpa_tela();
 	int linhas, colunas;
 	MATRIZ_PTR matriz = (MATRIZ_PTR)malloc(sizeof(MATRIZ));
 	matriz->prox = NULL;
 	do {
         printf("Digite a quantidade de linhas da matriz: ");
-        scanf("%d", &linhas);
-        fflush(stdin);
+        int valid = ReadInt(&linhas);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&linhas);
+        }
+
         if (linhas < 1){
             printf("Nao e possivel criar uma matriz com um numero nulo ou negativo de linhas.\n");
             printf("Tente novamente.\n");
@@ -166,27 +233,37 @@ MATRIZ_PTR criar_matriz(){
 
 	do {
         printf("Digite a quantidade de colunas da matriz: ");
-        scanf("%d", &colunas);
-        fflush(stdin);
+
+        int valid = ReadInt(&colunas);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&colunas);
+        }
+
         if (colunas < 1){
             printf("Nao e possivel criar uma matriz com um numero nulo ou negativo de colunas.\n");
             printf("Tente novamente.\n");
         }
 	} while (colunas < 1);
 
-	matriz->qtd_colunas = colunas;
-	matriz->qtd_linhas = linhas;
+	info_matriz_ptr->qtd_colunas = colunas;
+	info_matriz_ptr->qtd_linhas = linhas;
 	printf("Matriz criada com sucesso!\n");
     printf("Deseja atribuir algum valor a uma posicao? 1 - SIM   0 - NAO\n");
-    int num;
-    scanf("%d", &num);
-    fflush(stdin);
-    if (num == 1) atribuir_valor_pos(matriz);
+    int acao;
+
+    int valid = ReadInt(&acao);
+            while (!valid || acao<0 || acao>1){
+                printf("Entrada invalida, tente novamente: ");
+                valid = ReadInt(&acao);
+            }
+
+    if (acao == 1) atribuir_valor_pos(matriz, *info_matriz_ptr);
     return matriz;
 }
 
 //
-void consultar_valor_pos(MATRIZ_PTR matriz){
+void consultar_valor_pos(MATRIZ_PTR matriz, INFO_MATRIZ info_matriz){
     if (matriz == NULL){
 
         printf("Essa matriz esta vazia.\n");
@@ -196,18 +273,28 @@ void consultar_valor_pos(MATRIZ_PTR matriz){
     int i, j;
     double data;
     printf("Digite o valor da linha que deseja consultar: ");
-    scanf("%d", &i);
-    fflush(stdin);
-    if (i<0 || i>matriz->qtd_linhas){
-        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", matriz->qtd_linhas, matriz->qtd_colunas);
+
+    int valid = ReadInt(&i);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&i);
+        }
+
+    if (i<0 || i>(info_matriz.qtd_linhas)){
+        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", info_matriz.qtd_linhas, info_matriz.qtd_colunas);
         WaitENTER();
         return;
     }
     printf("Digite o valor da coluna que deseja consultar: ");
-    scanf("%d", &j);
-    fflush(stdin);
-    if (j<0 || j>matriz->qtd_colunas){
-        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", matriz->qtd_linhas, matriz->qtd_colunas);
+
+    valid = ReadInt(&j);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&j);
+        }
+
+    if (j<0 || j>(info_matriz.qtd_colunas)){
+        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", info_matriz.qtd_linhas, info_matriz.qtd_colunas);
         WaitENTER();
         return;
     }
@@ -226,7 +313,7 @@ void consultar_valor_pos(MATRIZ_PTR matriz){
     return;
 }
 
-void consultar_soma_linha(MATRIZ_PTR matriz){
+void consultar_soma_linha(MATRIZ_PTR matriz, INFO_MATRIZ info_matriz){
     if (matriz == NULL){
         printf("Essa matriz esta vazia.\n");
         WaitENTER();
@@ -236,10 +323,15 @@ void consultar_soma_linha(MATRIZ_PTR matriz){
     int linha;
     double soma = 0;
     printf("Digite a linha que deseja consultar: ");
-    scanf("%d", &linha);
-    fflush(stdin);
-    if (linha<0 || linha>matriz->qtd_linhas){
-        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", matriz->qtd_linhas, matriz->qtd_colunas);
+
+    int valid = ReadInt(&linha);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&linha);
+        }
+
+    if (linha<0 || linha>info_matriz.qtd_linhas){
+        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", info_matriz.qtd_linhas, info_matriz.qtd_colunas);
         WaitENTER();
         return;
     }
@@ -253,7 +345,7 @@ void consultar_soma_linha(MATRIZ_PTR matriz){
     return;
 }
 
-void consultar_soma_coluna(MATRIZ_PTR matriz){
+void consultar_soma_coluna(MATRIZ_PTR matriz, INFO_MATRIZ info_matriz){
     if (matriz == NULL){
         printf("Essa matriz esta vazia.\n");
         WaitENTER();
@@ -263,10 +355,15 @@ void consultar_soma_coluna(MATRIZ_PTR matriz){
     int col;
     double soma = 0;
     printf("Digite a coluna que deseja consultar: ");
-    scanf("%d", &col);
-    fflush(stdin);
-    if (col<0 || col>matriz->qtd_colunas){
-        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", matriz->qtd_linhas, matriz->qtd_colunas);
+
+    int valid = ReadInt(&col);
+        while (!valid){
+            printf("Entrada invalida, tente novamente: ");
+            valid = ReadInt(&col);
+        }
+
+    if (col<0 || col>info_matriz.qtd_colunas){
+        printf("Valor invalido, a matriz possui %d linhas e %d colunas.\n", info_matriz.qtd_linhas, info_matriz.qtd_colunas);
         WaitENTER();
         return;
     }
@@ -308,8 +405,8 @@ void MenuSobre() {
 
 //--------------------MAIN--------------------//
 int main (){
-//setlocale(LC_ALL, "Portuguese");
 MATRIZ_PTR matriz = NULL;
+INFO_MATRIZ info_matriz;
 splash_screen();
 printf("\n\n\n                   Pressione ENTER para prosseguir.\n");
 char c = getchar();
@@ -317,33 +414,33 @@ while (c != '\n') c = getchar();
 Limpa_tela();
 printf("                             AVISO!\n");
 printf("\n\nO seu programa nao possui matrizes. Sera criada uma matriz inicial.\n\n");
-printf("               Pressione ENTER para prosseguir.\n");
+printf("                    Pressione ENTER para prosseguir.\n");
 	c = getchar();
 	while (c != '\n') c = getchar();
-matriz = criar_matriz();
+matriz = criar_matriz(&info_matriz);
 Limpa_tela();
 int acao;
 while(1){
 acao = menu_principal();
     switch (acao) {
         case 1:
-            matriz = criar_matriz();
+            matriz = criar_matriz(&info_matriz);
             break;
 
         case 2:
-            consultar_valor_pos(matriz);
+            consultar_valor_pos(matriz, info_matriz);
             break;
 
         case 3:
-            consultar_soma_linha(matriz);
+            consultar_soma_linha(matriz, info_matriz);
             break;
 
         case 4:
-            consultar_soma_coluna(matriz);
+            consultar_soma_coluna(matriz, info_matriz);
             break;
 
         case 5:
-            atribuir_valor_pos(matriz);
+            atribuir_valor_pos(matriz, info_matriz);
             break;
 
         case 6:
