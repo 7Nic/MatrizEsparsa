@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <locale.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -28,6 +29,7 @@ typedef struct matriz MATRIZ;
 typedef MATRIZ *MATRIZ_PTR;
 
 //-------------FUNÇÕES-----------------------//
+
 
 int ReadInt(int *numero) {
 	bool negativo = false;
@@ -115,15 +117,15 @@ int menu_principal(){
 	Limpa_tela();
 	printf("                             Matriz Esparsa\n");
 	printf("\n\n\n\n\n");
-	printf("1 - Criar matriz                              2 - Consultar valor de uma posicao\n");
-	printf("3 - Consultar valor soma de linha             4 - Consultar valor de soma de coluna\n");
-	printf("5 - Atribuir valor a uma posicao              6 - Sobre\n");
-	printf("7 - Sair\n\n\n\n\n\n");
+	printf("1 - Criar matriz                                2 - Consultar valor de uma posicao\n");
+	printf("3 - Consultar valor soma de linha               4 - Consultar valor de soma de coluna\n");
+	printf("5 - Atribuir valor a uma posicao                6 - Sobre\n");
+	printf("7 - Calcular o determinante da matriz           8 - Sair\n\n\n\n\n\n");
 	printf("Digite a opcao desejada: ");
 	int acao;
 
         int valid = ReadInt(&acao);
-            while (!valid || acao<1 || acao>7){
+            while (!valid || acao<1 || acao>8){
                 printf("Entrada invalida, tente novamente: ");
                 valid = ReadInt(&acao);
             }
@@ -402,6 +404,53 @@ void MenuSobre() {
 	WaitENTER();
 }
 
+double consultar_valor_pos_direto(MATRIZ_PTR matriz, INFO_MATRIZ info_matriz, int i, int j){
+    if (matriz == NULL){
+        return -1;
+    }
+    double data;
+    //busca o valor na matriz
+    while (matriz != NULL){
+        if ((matriz->i == i) && (matriz->j == j)){
+            data = matriz->data;
+            return data;
+        }
+        matriz = matriz->prox;
+    }
+    return 0;
+}
+
+int e_zero_a_linha(MATRIZ_PTR matriz, INFO_MATRIZ info_matriz, int linha){
+    int qtd_zeros = 0;
+    for (int col=1; col<=info_matriz.qtd_colunas; col++){
+        if (consultar_valor_pos_direto(matriz, info_matriz, linha, col) == 0) qtd_zeros++; //o double retorna exatamente zero? sim, o float é q não faz isso
+    }
+    if (qtd_zeros == info_matriz.qtd_linhas) return 1; //retorna 1 pois a linha e zero, o 1 é V
+    return 0;
+}
+
+int e_zero_a_coluna(MATRIZ_PTR matriz, INFO_MATRIZ info_matriz, int coluna){
+    int qtd_zeros = 0;
+    for (int linha=1; linha<=info_matriz.qtd_linhas; linha++){
+        if (consultar_valor_pos_direto(matriz, info_matriz, linha, coluna) == 0) qtd_zeros++; //o double retorna exatamente zero? sim, o float é q não faz isso
+    }
+    if (qtd_zeros == info_matriz.qtd_colunas) return 1; //retorna 1 pois a linha é zero, o 1 é V
+    return 0;
+}
+
+double determinante (MATRIZ_PTR matriz, INFO_MATRIZ info_matriz){
+    for (int i=1; i<=info_matriz.qtd_colunas; i++){
+        if (e_zero_a_coluna(matriz, info_matriz, i) == 1) return 0;
+    }
+    for (int i=1; i<=info_matriz.qtd_linhas; i++) {
+        if (e_zero_a_linha(matriz, info_matriz, i) == 1) return 0;
+    }
+    return -1; //se não for 0
+
+
+
+}
+
 
 //--------------------MAIN--------------------//
 int main (){
@@ -420,6 +469,7 @@ printf("                    Pressione ENTER para prosseguir.\n");
 matriz = criar_matriz(&info_matriz);
 Limpa_tela();
 int acao;
+printf("E o det e = %lf\n", determinante(matriz, info_matriz));
 while(1){
 acao = menu_principal();
     switch (acao) {
@@ -448,8 +498,12 @@ acao = menu_principal();
             break;
 
         case 7:
-            return 0;
+            printf("O determinante da matriz e: %lf\n", determinante(matriz, info_matriz));
+            WaitENTER();
             break;
+
+        case 8:
+            return 0;
 
         default:
             printf("Valor invalido.\n");
