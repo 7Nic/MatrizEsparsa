@@ -891,7 +891,6 @@ void Imprime(MATRIZ_PTR ListaMatriz, CABECALHO_PTR cabecalho){
 	printf("\n\n");
 }
 
-//Refazer, muito ilegivel (mas funciona)
 void TrocaLinha(MATRIZ_PTR *ListaMatriz, int Linha_1, int Linha_2){
 	if(Linha_1 >= Linha_2)
 		return;
